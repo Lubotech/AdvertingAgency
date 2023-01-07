@@ -1,0 +1,97 @@
+﻿@model IEnumerable<AdvertisingAgency.Models.ViewModels.Pages.PageVM>
+
+@{
+    ViewBag.Title = "Pages";
+}
+
+<h2>Pages</h2>
+
+@if (TempData["M"] != null)    //вывод сообщения об изменении
+{
+    <div class="alert alert-success">
+        @TempData["M"]
+    </div>
+}
+
+<p>
+    @Html.ActionLink("Create a new page", "AddPage", "", new { @class = "btn btn-success" })
+</p>
+
+@if (!Model.Any())
+{
+<h1 class="text-center"> No pages </h1>
+}
+else
+{
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                Name
+            </th>
+            <th>
+                Characteristic
+            </th>
+            <th>
+                Side panel
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id" class="@item.Slug">
+                <td>
+                    @if (item.Slug != "home")
+                    {
+                        <span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
+                    }
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Slug)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit the page", "EditPage", new { id = item.Id }) |
+                    @Html.ActionLink("View the page", "PageDetails", new { id = item.Id })
+
+                    <!--Если Slug = home, не показывать кнопку удаления-->
+                    @if (item.Slug != "home")
+                     {
+                        string slash = "| ";
+                        @slash;
+                        @Html.ActionLink("Delete a page", "DeletePage", new { id = item.Id }, new { @class = "delete" })
+                     }
+                </td>
+            </tr>
+         }
+    </table>
+}
+
+<!--Джава скрипт-->
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            /*подтверждение удаления страницы*/
+
+            $("a.delete").click(function () {
+                if (!confirm("Confirm page deletion")) return false;
+            });
+
+            /*Скрипт сортировки*/
+
+            $("table#pages tbody").sortable({
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight", 
+                update: function () {
+                    var ids = $("table#pages tbody").sortable('serialize');
+                    var url = "/Admin/Pages/ReorderPages";
+
+                    $.post(url, ids, function (data) {
+                    });
+                }
+            });
+        });
+    </script>
+}

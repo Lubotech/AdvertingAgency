@@ -1,0 +1,44 @@
+﻿@model IEnumerable <AdvertisingAgency.Models.ViewModels.Account.UserVM>
+
+@{
+    ViewBag.Title = "Clients";
+}
+
+<h2>Clients</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            Surname
+        </th>
+        <th>
+            email Address
+        </th>
+        <th>
+            Login
+        </th>
+        <th></th>
+    </tr>
+
+    <!--Метод вывода клиентов-->
+    @foreach (var client in Model)
+    {
+    <tr>
+        <td>
+            @client.FirstName
+        </td>
+        <td>
+            @client.LastName
+        </td>
+        <td>
+            @client.EmailAdress
+        </td>
+        <td>
+            @client.Username
+        </td>
+    </tr>
+    }
+</table>

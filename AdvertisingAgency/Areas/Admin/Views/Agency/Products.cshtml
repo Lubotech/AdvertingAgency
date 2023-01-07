@@ -1,0 +1,113 @@
+﻿@model IEnumerable<AdvertisingAgency.Models.ViewModels.Agency.ProductVM>
+
+@{
+    ViewBag.Title = "Products";
+}
+
+@using PagedList.Mvc;
+@using PagedList;
+
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+<h2>Advertisement</h2>
+
+<!--Сортировка страниц-->
+<select id="SelectCategory" name="Selectcategory">
+    <option value="0"> All </option>
+    @foreach (var item in ViewBag.Categories)
+    {
+        if (ViewBag.SelectedCat == item.Value)
+        {
+            <option selected="selected" value="@item.Value">@item.Text</option>
+        }
+        else
+        {
+            <option value="@item.Value">@item.Text</option>
+        }
+    }
+</select>
+<br /><br />
+
+<p>
+    @Html.ActionLink(linkText: "Add a new advert", actionName: "AddProduct", routeValues: "", htmlAttributes: new { @class = "btn btn-success" })
+</p>
+<table class="table">
+    <tr>
+        <th>
+           Name
+        </th>
+        <th>
+            Description
+        </th>
+        <th>
+            Price
+        </th>
+        <th>
+            Picture
+        </th>
+        <th></th>
+    </tr>
+
+    <!--Метод вывода товаров-->
+    @foreach (var product in ViewBag.OnePageOfProducts)
+    {
+        <tr>
+            <td>
+                @product.Name
+            </td>
+            <td>
+                @product.Description
+            </td>
+            <td>
+                @product.Price
+            </td>
+            <td>
+                <a href="/admin/agency/EditProduct/@product.Id">
+                    @if (product.ImageName == null)
+                    {
+                        <img src="/Content/images2/no_image.png" /> <!--Если нет картинки то будет картинка по умолчанию-->
+                    }
+                    else
+                    {
+                        <!--Ссылка на редактирование по нажатию картинкии-->
+                        <img src="/Images/Uploads/Products/@product.Id/Small/@product.ImageName" /> <!--Уменьшенная картинка-->
+                    }
+                </a>
+            </td>
+
+            <td>
+                @Html.ActionLink("Edit adverts", "EditProduct", new { id = product.Id }, new { @class = "btn btn-info" }) |
+                @Html.ActionLink("Remove adverts", "DeleteProduct", new { id = product.Id }, new { @class = "delete btn btn-danger" })
+            </td>
+        </tr>
+    }
+</table>
+
+
+<!--Постраничная навигация-->
+@Html.PagedListPager((IPagedList)ViewBag.onePageOfProducts, generatePageUrl: page => Url.Action("Products", routeValues: new { page, catId = ViewBag.SelectedCat }))
+
+@section Scripts{ 
+    <script>
+        $(function () {
+
+            /* Выбрать продукт из категории */
+
+            $("#SelectCategory").on("change", function () {
+                var url = $(this).val();
+
+                if (url) {
+                    window.location = "/admin/agency/Products?catId=" + url;
+                }
+                return false;
+            });
+
+            /* Подтверждение удаления */
+
+            $("a.delete").click(function () {
+                if (!confirm("Confirm the deletion")) return false;
+            });
+            
+        });
+    </script>
+}

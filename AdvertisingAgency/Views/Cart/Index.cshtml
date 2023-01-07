@@ -1,0 +1,162 @@
+﻿@model IEnumerable<AdvertisingAgency.Models.ViewModels.Cart.CartVM>
+
+@{
+    ViewBag.Title = "Basket";
+}
+
+<h2>Basket:</h2>
+
+@if (ViewBag.Message != null)
+{
+    <h3>@ViewBag.Message</h3>
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Amount
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Picture
+            </th>
+
+            <th>
+                <!--Free cell for buttons to change the number of products-->
+                <!--Свободная ячейка для кнопок изменения кол-ва товаров-->
+            </th>
+
+            <th>
+                Total:
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProductName)
+                </td>
+                <td class="qty@(item.ProductId)">
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)р.
+                </td>
+                <td>
+                    <img src="~/Images/Uploads/Products/@item.ProductId/Small/@item.Image" />
+                </td>
+
+                <td>
+                    <a href="#" class="incproduct" data-id="@item.ProductId"> + </a>
+                    <a href="#" class="decproduct" data-id="@item.ProductId"> - </a>
+                    <a href="#" class="removeproduct" data-id="@item.ProductId"> Delete </a>
+                </td>
+
+                <td class="total@(item.ProductId)">
+                    @Html.DisplayFor(modelItem => item.Total)р.
+                </td>
+            </tr>
+        }
+
+        <tr>
+            <td class="grandtotal"><b>Total cost:   </b><span>@ViewBag.GrandTotal р.</span></td>
+        </tr>
+
+    </table>
+    
+    <table>
+        <tr>
+            <th>
+                @Html.ActionLink("Go to checkout", "Order", null,  new { @class = "btn btn-primary" })
+            </th>
+        </tr>
+    </table>
+}
+
+@section Scripts
+{
+    <script>
+        /* adding ads ((добавление рекламы (увеличение кол-ва)) */
+        $(function () {
+
+            $("a.incproduct").click(function (e) {
+                e.preventDefault();
+
+                var productId = $(this).data("id");
+                var url = "/cart/IncrementProduct";
+
+                $.getJSON(url, { productId: productId }, function (data) {
+                    $("td.qty" + productId).html(data.qty);
+
+                    var price = data.qty * data.price;
+                    var priceHtml = price + "р.";
+
+                    $("td.total" + productId).html(priceHtml);
+
+                    var gt = parseFloat($("td.grandtotal span").text());
+                    var grandtotal = (gt + data.price);
+
+                    $("td.grandtotal span").text(grandtotal);
+                });
+            });
+        });
+
+        /* Removing Adverts (Уменьшение рекламы (уменьшение кол-ва)) */
+        $(function () {
+
+            $("a.decproduct").click(function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                var productId = $(this).data("id");
+                var url = "/cart/DecrementProduct";
+
+                $.getJSON(url, { productId: productId }, function (data) {
+
+                    if (data.qty == 0) {
+                        $this.parent().fadeOut("fast", function () {
+                            location.reload();
+                        });
+                    }
+                    else {
+                        $("td.qty" + productId).html(data.qty);
+
+                        var price = data.qty * data.price;
+                        var priceHtml = price + "р.";
+
+                        $("td.total" + productId).html(priceHtml);
+
+                        var gt = parseFloat($("td.grandtotal span").text());
+                        var grandtotal = (gt - data.price);
+
+                        $("td.grandtotal span").text(grandtotal);
+                    }
+                });
+            });
+        });
+
+        /* Removing ads (Удаление рекламы) */
+        $(function () {
+
+            $("a.removeproduct").click(function (e) {
+                e.preventDefault();
+
+                var $this = $(this);
+                var productId = $(this).data("id");
+                var url = "/cart/RemoveProduct";
+
+                $.get(url, { productId: productId }, function (data) {
+                    location.reload();
+                });
+            });
+        });
+    </script>
+}

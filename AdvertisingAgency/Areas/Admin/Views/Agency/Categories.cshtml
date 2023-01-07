@@ -1,0 +1,221 @@
+﻿@model IEnumerable<AdvertisingAgency.Models.ViewModels.Agency.CategoryVM>
+
+@{
+    ViewBag.Title = "Categories";
+}
+
+<h2>ADVERTS CATEGORIES</h2>
+
+@if (TempData["M"] != null)    //вывод сообщения об изменении
+{
+    <div class="alert alert-success">
+        @TempData["M"]
+    </div>
+}
+
+<div class="new-cat">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Category name</span>
+        </div>
+        <input type="text" id="newcatname" class="form-control" />
+    </div>
+    <p>
+        <a href="#" id="newcata" class="btn btn-success">Add a new category </a>
+        <span class="ajax-text">
+            <img src="~/Content/images2/ajax-loader.gif" height="50" />
+        </span>
+    </p>
+</div>
+
+<!--Если в модели ничего нет, выводим сообщение об этом-->
+@if (!Model.Any())
+{
+<h1 class="text-center">The list of categories is empty.</h1>
+}
+else
+{
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id">
+                <td>
+
+                    <div class="container">
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="ajaxdivtd"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-0">
+                                <div class="ui-icon ui-icon-arrow-2-n-s" style="margin-top:10px"></div>
+                            </div>
+                            <div class="col-10">
+                                @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    @Html.ActionLink("Delete", "DeleteCategory", new { id = item.Id }, new { @class = "delete btn btn-danger" })
+                </td>
+            </tr>
+        }
+
+    </table>
+
+}
+
+@section Scripts
+{
+    <script>
+        $(function () {
+
+            /*Добавление новой категории*/
+
+            /* Объявление и инициализирование нужныx переменныx */
+
+            var newCatA = $("a#newcata"); /*Класс линка добавления*/
+            var newCatTextInput = $("#newcatname"); /*Класс текстового поля ввода*/
+            var ajaxText = $("span.ajax-text"); /*Класс картинки загрузки*/
+            var table = $("table#pages tbody"); /*Класс таблицы вывода*/
+
+            /* Функция на отлов нажатия Enter */
+            newCatTextInput.keyup(function (e) {
+                if (e.keyCode == 13) {
+                    newCatA.click();
+                }
+            });
+
+            /* Функция Click */
+            newCatA.click(function (e) {
+                e.preventDefault();
+
+                var catName = newCatTextInput.val();
+
+                if (catName.length < 3) {
+                    alert("The category name must contain at least 3 characters");
+                    return false;
+                }
+
+                ajaxText.show();
+
+                var url = "/admin/agency/AddNewCategory";
+
+                $.post(url, { catName: catName }, function (data) {
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        ajaxText.html("<span class='alert alert-danger'>This name is already taken!</span>");
+                        setTimeout(function () {
+                            ajaxText.fadeOut("fast", function () {
+                                ajaxText.html("<img src='/Content/images2/ajax-loader.gif' height='50' />");
+                            });
+                        }, 2000);
+                        return false;
+                    }
+                    else {
+                        if (!$("table#pages").length) {
+                            location.reload();
+                        }
+                        else {
+                            ajaxText.html("<span class='alert alert-success'>The advert category has been added!</span>");
+                            setTimeout(function () {
+                                ajaxText.fadeOut("fast", function () {
+                                    ajaxText.html("<img src='/Content/images2/ajax-loader.gif' height='50' />");
+                                });
+                            }, 2000);
+
+                            newCatTextInput.val("");
+
+                            var toAppend = $("table#pages tbody tr:last").clone();
+                            toAppend.attr("id", "id_" + data);
+                            toAppend.find("#item_Name").val(catName);
+                            toAppend.find("a.delete").attr("href", "/admin/agency/DeleteCategory/" + data);
+                            table.append(toAppend);
+                            table.sortable("refresh");
+                        }
+                    }
+                });
+            });
+
+
+            /*Подтверждение удаления категории рекламы*/
+            $("body").on("click", "a.delete", function () {
+                if (!confirm("Confirm the deletion of the ad category")) return false;
+            });
+
+            /*Переименование категорий рекламы*/
+            var originalTextBoxValue;
+
+            $("table#pages input.text-box").dblclick(function () {
+                originalTextBoxValue = $(this).val();
+                $(this).attr("readonly", false);
+            });
+
+            $("table#pages input.text-box").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    $(this).blur();
+                }
+            });
+
+            $("table#pages input.text-box").blur(function () {
+                var $this = $(this);
+                var ajaxdiv = $this.parent().parent().parent().find(".ajaxdivtd");
+                var newCatName = $this.val();
+                var id = $this.parent().parent().parent().parent().parent().attr("id").substring(3);
+                var url = "/admin/agency/RenameCategory";
+
+                if (newCatName.length < 3) {
+                    alert("The category name must contain at least 3 characters.");
+                    $this.attr("readonly", true);
+                    return false;
+                }
+
+                $.post(url, { newCatName: newCatName, id: id }, function (data) {
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        $this.val(originalTextBoxValue);
+                        ajaxdiv.html("<div class='alert alert-danger'>Such a name already exists.</div>").show();
+                    }
+                    else {
+                        ajaxdiv.html("<div class='alert alert-success'>The category name has been changed.</div>").show();
+                    }
+
+                    setTimeout(function () {
+                        ajaxdiv.fadeOut("fast", function () {
+                            ajaxdiv.html("");
+                        });
+                    }, 3000);
+                }).done(function () {
+                    $this.attr("readonly", true);
+                });
+            });
+
+
+            /*Скрипт сортировки*/
+            $("table#pages tbody").sortable({
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var ids = $("table#pages tbody").sortable('serialize');
+                    var url = "/Admin/Agency/ReorderCategories";
+
+                    $.post(url, ids, function (data) {
+                    });
+                }
+            });
+        });
+    </script>
+}

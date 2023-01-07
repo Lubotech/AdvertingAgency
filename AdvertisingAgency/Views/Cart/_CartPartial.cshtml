@@ -1,0 +1,7 @@
+﻿@model AdvertisingAgency.Models.ViewModels.Cart.CartVM
+
+<div class=ajaxcart">
+    Your shopping cart: @Model.Quantity - @Model.Price p.
+
+    @Html.ActionLink("Go to cart", "Index")
+</div>

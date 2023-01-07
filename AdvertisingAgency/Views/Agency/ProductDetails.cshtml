@@ -1,0 +1,75 @@
+﻿@model AdvertisingAgency.Models.ViewModels.Agency.ProductVM
+
+@{
+    ViewBag.Title = Model.Name;
+}
+
+<h2>@Model.Name</h2>
+<br />
+
+<div class="row">
+    <div class="col-sm-12 col-md-4">
+        <img src="~/Images/Uploads/Products/@Model.Id/Small/@Model.ImageName" />
+    </div>
+
+    <div class="col-sm-12 col-md-5">
+
+        @Html.DisplayFor(model => model.Description)
+    </div>
+    <div class="col-sm-12 col-md-3">
+
+        @Html.DisplayFor(model => model.Price) p.
+
+        <br />
+        <div class="addtocart">
+            <a href="#" class="addtocart btn btn-success">Add to Cart</a>
+            <span class="loader">
+                <img src="~/Content/images2/ajax-loader.gif" height="100" width="150" />
+            </span>
+            <div class="ajaxmsg">
+                The advert has been added to the shopping cart.
+            </div>
+        </div>
+    </div>
+    <br />
+    <br />
+    <hr />
+</div>
+
+    @section Scripts{
+        <link href="~/Content/jquery.fancybox.css" rel="stylesheet" />
+        <script src="~/Scripts/jquery.fancybox.js"></script>
+
+        <script>
+            $(function () {
+                $(".fancybox").fancybox();
+            });
+        </script>
+
+        <script>
+        /*Adding to cart (counts clicks on add to cart)
+          Добавление в корзину (считает нажатия на добавить в корзину)*/
+            $(function () {
+                $("a.addtocart").click(function (e) {
+                    e.preventDefault();
+
+                    $("span.loader").addClass("ib");
+
+                    var url = "/cart/AddToCartPartial";
+
+                    $.get(url, { id: @Model.Id
+                    }, function (data) {
+                        $(".ajaxcart").html(data);
+                    }).done(function () {
+                        $("span.loader").removeClass("ib");
+                        $("div.ajaxmsg").addClass("ib");
+
+                        setTimeout(function () {
+                            $("div.ajaxmsg").fadeOut("fast");
+                            $("div.ajaxmsg").removeClass("ib");
+                        }, 2000);
+                    });
+                });
+            });
+        </script>   
+    }

@@ -1,0 +1,48 @@
+﻿@model IEnumerable<AdvertisingAgency.Models.ViewModels.Agency.ProductVM>
+
+@{
+    ViewBag.Title = ViewBag.CategoryName;
+}
+
+
+
+<table class="table">
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            Description
+        </th>
+        <th>
+            Price
+        </th>
+        <th>
+            Picture
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Description)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Price) p.
+        </td>
+        <td>
+            <a href="/agency/product-details/@item.Slug">
+                <img src="~/Images/Uploads/Products/@item.Id/Small/@item.ImageName" />
+            </a>
+        </td>
+        <td>
+            <a href="/agency/product-details/@item.Slug" class="btn btn-info">Details</a>
+        </td>
+    </tr>
+}
+
+</table>
